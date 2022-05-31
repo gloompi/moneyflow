@@ -1,0 +1,25 @@
+FROM golang:1.18 as builder
+ENV CGO_ENABLED 0
+ARG BUILD_REF
+
+COPY . /moneyflow
+
+WORKDIR /moneyflow/app/services/moneyflow-api
+RUN go build -ldflags "-X main.build=${BUILD_REF}"
+
+FROM alpine:3.15
+ARG BUILD_DATE
+ARG BUILD_REF
+RUN addgroup -g 1000 -S admins && \
+    adduser -u 1000 -h /moneyflow -G admins -S gloompi
+COPY --from=builder --chown=gloompi:admins /moneyflow/app/services/moneyflow-api/moneyflow-api /moneyflow/moneyflow-api
+WORKDIR /moneyflow
+USER gloompi
+CMD ["./moneyflow-api"]
+
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.title="moneyflow-api" \
+      org.opencontainers.image.authors="Esenzhanov Kubanychbek <gloompi@gmail.com>" \
+      org.opencontainers.image.source="github.com/gloompi/moneyflow" \
+      org.opencontainers.image.revision="${BUILD_REF}" \
+      org.opencontainers.image.vendor="Ultron Studio"
