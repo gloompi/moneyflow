@@ -1,6 +1,5 @@
 make --dry-run --always-make --keep-going --print-directory
 make: Entering directory `/Users/gloompi/works/ultimate-service'
 go run app/services/moneyflow-api/main.go | go run app/tooling/logfmt/main.go
- 
 make: Leaving directory `/Users/gloompi/works/ultimate-service'
  
