@@ -1,5 +1,5 @@
 # Binaries
-./moneyflow-api
+bin/*
 
 # Mac
 .DS_Store

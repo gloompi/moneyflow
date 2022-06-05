@@ -10,6 +10,9 @@ SHELL := /bin/bash
 #
 # ==============================================================================
 
+build:
+	go build -o bin/moneyflow-api ./app/services/moneyflow-api
+
 run:
 	go run app/services/moneyflow-api/main.go | go run app/tooling/logfmt/main.go
 
