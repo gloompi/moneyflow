@@ -1,3 +1,4 @@
+// Package metrics provides metrics for the application.
 package metrics
 
 import (

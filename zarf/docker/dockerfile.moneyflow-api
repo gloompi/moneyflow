@@ -12,6 +12,7 @@ ARG BUILD_DATE
 ARG BUILD_REF
 RUN addgroup -g 1000 -S admins && \
     adduser -u 1000 -h /moneyflow -G admins -S gloompi
+COPY --from=builder --chown=gloompi:admins /moneyflow/zarf/keys/. /moneyflow/zarf/keys/.
 COPY --from=builder --chown=gloompi:admins /moneyflow/app/services/moneyflow-api/moneyflow-api /moneyflow/moneyflow-api
 WORKDIR /moneyflow
 USER gloompi

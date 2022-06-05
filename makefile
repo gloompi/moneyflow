@@ -2,11 +2,26 @@ SHELL := /bin/bash
 
 # ==============================================================================
 # Testing running system
-#
-# expvarmon -ports=":4040" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+
+# For testing a simple query on the system. Don't forget to `make seed` first.
+# curl -il http://localhost:3030/v1/testauth
+# export TOKEN="COPY TOKEN STRING FROM LAST CALL"
+# curl -ilH "Authorization: Bearer ${TOKEN}" http://localhost:3030/v1/testauth
 #
 # For testing load on the service.
 # hey -m GET -c 100 -n 10000 http://localhost:3030/v1/test
+#
+# Access metrics directly (4040) or through the sidecar (3031)
+# expvarmon -ports=":4040" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+# expvarmon -ports=":3031" -endpoint="/metrics" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+#
+# Used to install expvarmon program for metrics dashboard.
+# go install github.com/divan/expvarmon@latest
+#
+# To generate a private/public key PEM file.
+# openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
+# openssl rsa -pubout -in private.pem -out public.pem
+# ./admin genkey
 #
 # ==============================================================================
 
@@ -16,9 +31,13 @@ build:
 run:
 	go run app/services/moneyflow-api/main.go | go run app/tooling/logfmt/main.go
 
+admin:
+	go run app/tooling/admin/main.go
+
 # ==============================================================================
 # Building containers
 
+# $(shell git rev-parse --short HEAD)
 APP_NAME := moneyflow-api-amd64
 VERSION := 1.0
 
@@ -81,3 +100,10 @@ kind-describe:
 tidy:
 	go mod tidy
 	go mod vendor
+
+# ==============================================================================
+# Running tests within the local computer
+
+test:
+	go test ./... -count=1
+	staticcheck -checks=all ./...

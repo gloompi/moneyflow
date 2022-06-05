@@ -1,3 +1,4 @@
+// Package testgrp provides group of test handlers.
 package testgrp
 
 import (
