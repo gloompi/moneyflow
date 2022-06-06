@@ -6,9 +6,8 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # PARTICULAR PURPOSE.
 
 # This program built for i386-apple-darwin11.3.0
- 
 
-# Make data base, printed on Fri Jun  3 21:52:05 2022
+# Make data base, printed on Sun Jun  5 21:37:22 2022
 
 # Variables
 
@@ -36,14 +35,14 @@ _ = /usr/bin/make
 MAKEFILE_LIST :=  makefile
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
-# makefile (from `makefile', line 17)
+# makefile (from `makefile', line 42)
 VERSION := 1.0
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
 __CFBundleIdentifier = com.microsoft.VSCode
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /var/folders/ws/7h88pdld2b73wy495gn7_30m0000gn/T/vscode-ipc-1e0e92d0-f857-4ead-819b-1db0342fe52f.sock
+VSCODE_IPC_HOOK_EXTHOST = /var/folders/ws/7h88pdld2b73wy495gn7_30m0000gn/T/vscode-ipc-3ffd5bc1-72c1-4dcf-81cf-bda861bb261f.sock
 # environment
 VSCODE_CWD = /
 # environment
@@ -59,7 +58,6 @@ VSCODE_LOG_STACK = false
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # default
- 
 .FEATURES := target-specific order-only second-expansion else-if archives jobserver check-symlink
 # environment
 SSH_AUTH_SOCK = /private/tmp/com.apple.launchd.nf1yEqRoAw/Listeners
@@ -100,7 +98,7 @@ MAKE_VERSION := 3.81
 # environment
 USER = gloompi
 # makefile
-.DEFAULT_GOAL := run
+.DEFAULT_GOAL := build
 # automatic
 %D = $(patsubst %/,%,$(dir $%))
 # default
@@ -125,9 +123,9 @@ XPC_SERVICE_NAME = application.com.microsoft.VSCode.12365545.12365551
 +D = $(patsubst %/,%,$(dir $+))
 # automatic
 +F = $(notdir $+)
-# makefile (from `makefile', line 16)
+# makefile (from `makefile', line 41)
 APP_NAME := moneyflow-api-amd64
-# makefile (from `makefile', line 32)
+# makefile (from `makefile', line 57)
 KIND_CLUSTER := gloompi-starter-cluster
 # environment
 __CF_USER_TEXT_ENCODING = 0x1F5:0x0:0x2
@@ -162,9 +160,9 @@ VSCODE_PID = 464
 
 # Directories
 
-# . (device 16777220, inode 12356859): 15 files, no impossibilities.
+# . (device 16777220, inode 12356859): 17 files, no impossibilities.
 
-# 15 files, no impossibilities in 1 directories.
+# 17 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -176,7 +174,7 @@ kind-logs:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `makefile', line 60):
+#  commands to execute (from `makefile', line 85):
 	kubectl logs -l app=moneyflow --all-containers=true -f --tail=100 | go run app/tooling/logfmt/main.go
 	
 
@@ -184,7 +182,7 @@ kind-restart:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `makefile', line 63):
+#  commands to execute (from `makefile', line 88):
 	kubectl rollout restart deployment moneyflow-pod
 	
 
@@ -192,7 +190,7 @@ kind-load:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `makefile', line 45):
+#  commands to execute (from `makefile', line 70):
 	cd zarf/k8s/kind/moneyflow-pod; kustomize edit set image moneyflow-api-image=$(APP_NAME):$(VERSION)
 	kind load docker-image $(APP_NAME):$(VERSION) --name $(KIND_CLUSTER)
 	
@@ -206,11 +204,19 @@ all: moneyflow
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/5=0%
 
+admin:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 35):
+	go run app/tooling/admin/main.go
+	
+
 kind-status-moneyflow:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `makefile', line 57):
+#  commands to execute (from `makefile', line 82):
 	kubectl get pods -o wide --watch
 	
 
@@ -225,14 +231,31 @@ kind-update-apply: all kind-load kind-apply
 #  Modification time never checked.
 #  File has not been updated.
 
+test:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 108):
+	go test ./... -count=1
+	staticcheck -checks=all ./...
+	
+
 # Not a target:
 makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-06-02 23:11:34
+#  Last modified 2022-06-05 18:11:21
 #  File has been updated.
 #  Successfully updated.
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
+
+build:
+#  Implicit rule search has not been done.
+#  Modification time never checked.
+#  File has not been updated.
+#  commands to execute (from `makefile', line 29):
+	go build -o bin/moneyflow-api ./app/services/moneyflow-api
+	
 
 moneyflow:
 #  Implicit rule search has not been done.
@@ -258,7 +281,7 @@ moneyflow:
 # ? := 
 # variable set hash-table stats:
 # Load=8/32=25%, Rehash=0, Collisions=1/13=8%
-#  commands to execute (from `makefile', line 22):
+#  commands to execute (from `makefile', line 47):
 	docker build \
 	-f zarf/docker/dockerfile.moneyflow-api \
 	-t $(APP_NAME):$(VERSION) \
@@ -277,7 +300,7 @@ kind-apply:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `makefile', line 49):
+#  commands to execute (from `makefile', line 74):
 	kustomize build zarf/k8s/kind/moneyflow-pod | kubectl apply -f -
 	
 
@@ -285,7 +308,7 @@ run:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `makefile', line 11):
+#  commands to execute (from `makefile', line 32):
 	go run app/services/moneyflow-api/main.go | go run app/tooling/logfmt/main.go
 	
 
@@ -293,15 +316,16 @@ kind-describe:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `makefile', line 70):
+#  commands to execute (from `makefile', line 95):
 	kubectl describe pods -l app=moneyflow
 	
 
 tidy:
+ 
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `makefile', line 76):
+#  commands to execute (from `makefile', line 101):
 	go mod tidy
 	go mod vendor
 	
@@ -310,7 +334,7 @@ kind-status:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `makefile', line 52):
+#  commands to execute (from `makefile', line 77):
 	kubectl get nodes -o wide
 	kubectl get svc -o wide
 	kubectl get pods -o wide --watch --all-namespaces
@@ -320,7 +344,7 @@ kind-up:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `makefile', line 35):
+#  commands to execute (from `makefile', line 60):
 	kind create cluster \
 	--image kindest/node:v1.24.0@sha256:406fd86d48eaf4c04c7280cd1d2ca1d61e7d0d61ddef0125cb097bc7b82ed6a1 \
 	--name $(KIND_CLUSTER) \
@@ -332,7 +356,7 @@ kind-down:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
-#  commands to execute (from `makefile', line 42):
+#  commands to execute (from `makefile', line 67):
 	kind delete cluster --name $(KIND_CLUSTER)
 	
 
@@ -342,8 +366,7 @@ kind-update: all kind-load kind-restart
 #  File has not been updated.
 
 # files hash-table stats:
-# Load=18/1024=2%, Rehash=0, Collisions=0/39=0%
- 
+# Load=21/1024=2%, Rehash=0, Collisions=0/42=0%
 # VPATH Search Paths
 
 # No `vpath' search paths.
@@ -355,6 +378,6 @@ kind-update: all kind-load kind-restart
 # strcache size: total = 4096 / max = 4096 / min = 4096 / avg = 4096
 # strcache free: total = 4087 / max = 4087 / min = 4087 / avg = 4087
 
-# Finished Make data base on Fri Jun  3 21:52:05 2022
+# Finished Make data base on Sun Jun  5 21:37:22 2022
 
  

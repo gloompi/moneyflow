@@ -23,6 +23,9 @@ SHELL := /bin/bash
 # openssl rsa -pubout -in private.pem -out public.pem
 # ./admin genkey
 #
+# Database access
+# dblab --host 0.0.0.0 --user postgres --db postgres --pass postgres --ssl disable --port 5432 --driver postgres
+#
 # ==============================================================================
 
 build:
@@ -71,6 +74,8 @@ kind-load:
 	kind load docker-image $(APP_NAME):$(VERSION) --name $(KIND_CLUSTER)
 
 kind-apply:
+	kustomize build zarf/k8s/kind/database-pod | kubectl apply -f -
+	kubectl wait --namespace=database-system --timeout=120s --for=condition=Available deployment/database-pod
 	kustomize build zarf/k8s/kind/moneyflow-pod | kubectl apply -f -
 
 kind-status:
@@ -80,6 +85,9 @@ kind-status:
 
 kind-status-moneyflow:
 	kubectl get pods -o wide --watch
+
+kind-status-db:
+	kubectl get pods -o wide --watch --namespace=database-system
 
 kind-logs:
 	kubectl logs -l app=moneyflow --all-containers=true -f --tail=100 | go run app/tooling/logfmt/main.go
