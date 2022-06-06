@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -11,15 +12,43 @@ import (
 	"os"
 	"time"
 
+	"github.com/gloompi/ultimate-service/business/data/schema"
+	"github.com/gloompi/ultimate-service/business/sys/database"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 func main() {
-	err := genToken()
+	err := migrate()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func migrate() error {
+	cfg := database.Config{
+		User:       "postgres",
+		Password:   "postgres",
+		Host:       "localhost",
+		Name:       "postgres",
+		DisableTLS: true,
+	}
+
+	db, err := database.Open(cfg)
+	if err != nil {
+		return fmt.Errorf("connect database: %w", err)
+	}
+	defer db.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := schema.Migrate(ctx, db); err != nil {
+		return fmt.Errorf("migrate database: %w", err)
+	}
+
+	fmt.Println("migrations complete")
+	return nil
 }
 
 func genToken() error {
