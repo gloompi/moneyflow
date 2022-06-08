@@ -24,7 +24,10 @@ spec:
       # moneyflow-api init container configuration
       - name: init-migrate
         image: moneyflow-api-image
-        command: ['./admin']
+        command: ['./admin', 'migrate']
+      - name: init-seed
+        image: moneyflow-api-image
+        command: ['./admin', 'seed']
       containers:
       - name: moneyflow-api
         image: moneyflow-api-image
@@ -80,8 +83,14 @@ spec:
     app: moneyflow
   ports:
   - name: moneyflow-api
-    port: 3000
+    port: 3030
     targetPort: moneyflow-api
   - name: moneyflow-debug
-    port: 4000
+    port: 4040
     targetPort: moneyflow-debug
+  - name: metrics
+    port: 3031
+    targetPort: metrics
+  - name: metrics-debug
+    port: 4041
+    targetPort: metrics-debug

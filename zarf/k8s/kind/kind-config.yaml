@@ -5,7 +5,13 @@ nodes:
   extraPortMappings:
   - containerPort: 3030
     hostPort: 3030
+  - containerPort: 3031
+    hostPort: 3031
   - containerPort: 4040
     hostPort: 4040
+  - containerPort: 4041
+    hostPort: 4041
+  - containerPort: 9411
+    hostPort: 9411
   - containerPort: 5432
     hostPort: 5432
