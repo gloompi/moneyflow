@@ -2,9 +2,11 @@ package mid
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/gloompi/ultimate-service/business/sys/validate"
+	v1Web "github.com/gloompi/ultimate-service/business/web/v1"
 	"github.com/gloompi/ultimate-service/foundation/web"
 	"go.uber.org/zap"
 )
@@ -19,38 +21,46 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 
 		// Create the handler that will be attached in the middleware chain.
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+
 			// If the context is missing this value, request the service
 			// to be shutdown gracefully.
 			v, err := web.GetValues(ctx)
 			if err != nil {
-				return web.NewShutdownError(":web value missing from context")
+				return web.NewShutdownError("web value missing from context")
 			}
 
 			// Run the next handler and catch any propagated error.
 			if err := handler(ctx, w, r); err != nil {
+
 				// Log the error.
-				log.Errorw("ERROR", "traceid", v.TraceID, "ERROR", err)
+				log.Errorw("ERROR", "traceid", v.TraceID, "message", err)
 
 				// Build out the error response.
-				var er validate.ErrorResponse
+				var er v1Web.ErrorResponse
 				var status int
-				switch act := validate.Cause(err).(type) {
-				case validate.FieldErrors:
-					er = validate.ErrorResponse{
+				switch {
+				case validate.IsFieldErrors(err):
+					fieldErrors := validate.GetFieldErrors(err)
+					er = v1Web.ErrorResponse{
 						Error:  "data validation error",
-						Fields: act.Error(),
+						Fields: fieldErrors.Fields(),
 					}
 					status = http.StatusBadRequest
-				case *validate.RequestError:
-					er = validate.ErrorResponse{
-						Error: act.Error(),
+					fmt.Println("========= fieldErrors =========", err)
+				case v1Web.IsRequestError(err):
+					reqErr := v1Web.GetRequestError(err)
+					er = v1Web.ErrorResponse{
+						Error: reqErr.Error(),
 					}
-					status = act.Status
+					status = reqErr.Status
+					fmt.Println("========= requestError =========", err)
+
 				default:
-					er = validate.ErrorResponse{
+					er = v1Web.ErrorResponse{
 						Error: http.StatusText(http.StatusInternalServerError),
 					}
 					status = http.StatusInternalServerError
+					fmt.Println("========= default =========", err)
 				}
 
 				// Respond with the error back to the client.
@@ -59,11 +69,10 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 				}
 
 				// If we receive the shutdown err we need to return it
-				// back to the base handler to shutdown the service.
-				if ok := web.IsShutdown(err); ok {
+				// back to the base handler to shut down the service.
+				if web.IsShutdown(err) {
 					return err
 				}
-
 			}
 
 			// The error has been handled so we can stop propagating it.

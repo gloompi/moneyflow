@@ -61,6 +61,21 @@ func (fe FieldErrors) Fields() map[string]string {
 	return m
 }
 
+// IsFieldErrors checks if an error of type FieldErrors exists.
+func IsFieldErrors(err error) bool {
+	var fe FieldErrors
+	return errors.As(err, &fe)
+}
+
+// GetFieldErrors returns a copy of the FieldErrors pointer.
+func GetFieldErrors(err error) FieldErrors {
+	var fe FieldErrors
+	if !errors.As(err, &fe) {
+		return nil
+	}
+	return fe
+}
+
 // Cause iterates through all the wrapped errors until the root
 // error value is reached.
 func Cause(err error) error {

@@ -167,7 +167,6 @@ func (c Core) QueryByID(ctx context.Context, userID string) (User, error) {
 
 // QueryByEmail gets the specified user from the database by email.
 func (c Core) QueryByEmail(ctx context.Context, email string) (User, error) {
-
 	// Email Validate function in validate.
 	if !validate.CheckEmail(email) {
 		return User{}, ErrInvalidEmail

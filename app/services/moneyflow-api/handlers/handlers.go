@@ -2,21 +2,89 @@
 package handlers
 
 import (
+	"context"
 	"expvar"
 	"net/http"
 	"net/http/pprof"
 	"os"
 
 	"github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/debug/checkgrp"
-	v1Tgh "github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/v1/testgrp"
-	v1Ugh "github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/v1/usergrp"
-	"github.com/gloompi/ultimate-service/business/core/user"
+	v1 "github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/v1"
 	"github.com/gloompi/ultimate-service/business/sys/auth"
 	"github.com/gloompi/ultimate-service/business/web/mid"
 	"github.com/gloompi/ultimate-service/foundation/web"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 )
+
+// Options represent optional parameters.
+type Options struct {
+	corsOrigin string
+}
+
+// WithCORS provides configuration options for CORS.
+func WithCORS(origin string) func(opts *Options) {
+	return func(opts *Options) {
+		opts.corsOrigin = origin
+	}
+}
+
+type APIMuxConfig struct {
+	Shutdown chan os.Signal
+	Log      *zap.SugaredLogger
+	Auth     *auth.Auth
+	DB       *sqlx.DB
+}
+
+// APIMux constructs a http.Handler with all application routes defined.
+func APIMux(cfg APIMuxConfig, options ...func(opts *Options)) http.Handler {
+	var opts Options
+	for _, option := range options {
+		option(&opts)
+	}
+
+	// Construct the web.App which holds all routes as well as common Middleware.
+	var app *web.App
+
+	// Do we need CORS?
+	if opts.corsOrigin != "" {
+		app = web.NewApp(
+			cfg.Shutdown,
+			mid.Logger(cfg.Log),
+			mid.Errors(cfg.Log),
+			mid.Metrics(),
+			mid.Cors(opts.corsOrigin),
+			mid.Panics(),
+		)
+
+		// Accept CORS 'OPTIONS' preflight requests if config has been provided.
+		// Don't forget to apply the CORS middleware to the routes that need it.
+		// Example Config: `conf:"default:https://MY_DOMAIN.COM"`
+		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+			return nil
+		}
+		app.Handle(http.MethodOptions, "", "/*", h, mid.Cors(opts.corsOrigin))
+	}
+
+	if app == nil {
+		app = web.NewApp(
+			cfg.Shutdown,
+			mid.Logger(cfg.Log),
+			mid.Errors(cfg.Log),
+			mid.Metrics(),
+			mid.Panics(),
+		)
+	}
+
+	// Load the v1 routes.
+	v1.Routes(app, v1.Config{
+		Log:  cfg.Log,
+		Auth: cfg.Auth,
+		DB:   cfg.DB,
+	})
+
+	return app
+}
 
 // DebugStandardLibraryMux registers all the debug routes from the standard library
 // into a new mux bypassing the use of the DefaultServerMux. Using the
@@ -53,50 +121,4 @@ func DebugMux(build string, log *zap.SugaredLogger, db *sqlx.DB) http.Handler {
 	mux.HandleFunc("/debug/liveness", cgh.Liveness)
 
 	return mux
-}
-
-type APIMuxConfig struct {
-	Shutdown chan os.Signal
-	Log      *zap.SugaredLogger
-	Auth     *auth.Auth
-	DB       *sqlx.DB
-}
-
-func APIMux(cfg APIMuxConfig) *web.App {
-	app := web.NewApp(
-		cfg.Shutdown,
-		mid.Logger(cfg.Log),
-		mid.Errors(cfg.Log),
-		mid.Metrics(),
-		mid.Panics(),
-	)
-
-	v1(app, cfg)
-
-	return app
-}
-
-func v1(app *web.App, cfg APIMuxConfig) {
-	const version = "v1"
-	authen := mid.Authenticate(cfg.Auth)
-	admin := mid.Authorize(auth.RoleAdmin)
-
-	tgh := v1Tgh.Handlers{
-		Log: cfg.Log,
-	}
-
-	app.Handle(http.MethodGet, version, "/test", tgh.Test)
-	app.Handle(http.MethodGet, version, "/testauth", tgh.Test, authen, admin)
-
-	// Register user management and authentication endpoints.
-	ugh := v1Ugh.Handlers{
-		User: user.NewCore(cfg.Log, cfg.DB),
-		Auth: cfg.Auth,
-	}
-	app.Handle(http.MethodGet, version, "/users/token", ugh.Token)
-	app.Handle(http.MethodGet, version, "/users/:page/:rows", ugh.Query, authen, admin)
-	app.Handle(http.MethodGet, version, "/users/:id", ugh.QueryByID, authen)
-	app.Handle(http.MethodPost, version, "/users", ugh.Create, authen, admin)
-	app.Handle(http.MethodPut, version, "/users/:id", ugh.Update, authen, admin)
-	app.Handle(http.MethodDelete, version, "/users/:id", ugh.Delete, authen, admin)
 }
