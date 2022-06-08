@@ -71,6 +71,13 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+      - name: metrics
+        image: metrics-image
+        ports:
+        - name: metrics
+          containerPort: 3031
+        - name: metrics-debug
+          containerPort: 4041
 ---
 apiVersion: v1
 kind: Service
