@@ -1,10 +1,9 @@
-# Golang ultimate service starter-kit
+# Moneyflow API
 
 [![CircleCI](https://circleci.com/gh/ardanlabs/service.svg?style=svg)](https://circleci.com/gh/ardanlabs/service) [![Go Report Card](https://goreportcard.com/badge/github.com/ardanlabs/service)](https://goreportcard.com/report/github.com/ardanlabs/service) [![go.mod Go version](https://img.shields.io/github/go-mod/go-version/ardanlabs/service)](https://github.com/ardanlabs/service)
 
-Copyright 2018, 2019, 2020, 2021, 2022, Ardan Labs info@ardanlabs.com
+Copyright 2022, Kubanychbek Esenzhanov gloompi@gmail.com
 
-This starter-kit was developed by following course https://www.ardanlabs.com/training/ultimate-go/advanced-concepts/ and will be further adjusted for personal needs.
 
 ## Commands
 

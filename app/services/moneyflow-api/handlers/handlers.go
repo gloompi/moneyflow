@@ -8,7 +8,9 @@ import (
 	"os"
 
 	"github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/debug/checkgrp"
-	"github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/v1/testgrp"
+	v1Tgh "github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/v1/testgrp"
+	v1Ugh "github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/v1/usergrp"
+	"github.com/gloompi/ultimate-service/business/core/user"
 	"github.com/gloompi/ultimate-service/business/sys/auth"
 	"github.com/gloompi/ultimate-service/business/web/mid"
 	"github.com/gloompi/ultimate-service/foundation/web"
@@ -76,11 +78,25 @@ func APIMux(cfg APIMuxConfig) *web.App {
 
 func v1(app *web.App, cfg APIMuxConfig) {
 	const version = "v1"
+	authen := mid.Authenticate(cfg.Auth)
+	admin := mid.Authorize(auth.RoleAdmin)
 
-	tgh := testgrp.Handlers{
+	tgh := v1Tgh.Handlers{
 		Log: cfg.Log,
 	}
 
 	app.Handle(http.MethodGet, version, "/test", tgh.Test)
-	app.Handle(http.MethodGet, version, "/testauth", tgh.Test, mid.Authenticate(cfg.Auth), mid.Authorize("ADMIN"))
+	app.Handle(http.MethodGet, version, "/testauth", tgh.Test, authen, admin)
+
+	// Register user management and authentication endpoints.
+	ugh := v1Ugh.Handlers{
+		User: user.NewCore(cfg.Log, cfg.DB),
+		Auth: cfg.Auth,
+	}
+	app.Handle(http.MethodGet, version, "/users/token", ugh.Token)
+	app.Handle(http.MethodGet, version, "/users/:page/:rows", ugh.Query, authen, admin)
+	app.Handle(http.MethodGet, version, "/users/:id", ugh.QueryByID, authen)
+	app.Handle(http.MethodPost, version, "/users", ugh.Create, authen, admin)
+	app.Handle(http.MethodPut, version, "/users/:id", ugh.Update, authen, admin)
+	app.Handle(http.MethodDelete, version, "/users/:id", ugh.Delete, authen, admin)
 }
