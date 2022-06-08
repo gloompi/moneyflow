@@ -18,6 +18,12 @@ import (
 	"github.com/gloompi/ultimate-service/business/web/auth"
 	"github.com/gloompi/ultimate-service/foundation/keystore"
 	"github.com/gloompi/ultimate-service/foundation/logger"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/zipkin"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.10.0"
 	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
 )
@@ -29,6 +35,7 @@ import (
 var build = "develop"
 
 func main() {
+	// Construct the application logger.
 	log, err := logger.New("MONEYFLOW-API")
 
 	if err != nil {
@@ -61,6 +68,7 @@ func run(log *zap.SugaredLogger) error {
 
 	// =========================================================================
 	// Configuration
+
 	cfg := struct {
 		conf.Version
 		Web struct {
@@ -84,6 +92,11 @@ func run(log *zap.SugaredLogger) error {
 			MaxOpenConns int    `conf:"default:0"`
 			DisableTLS   bool   `conf:"default:true"`
 		}
+		Zipkin struct {
+			ReporterURI string  `conf:"default:http://localhost:9411/api/v2/spans"`
+			ServiceName string  `conf:"default:moneyflow-api"`
+			Probability float64 `conf:"default:0.05"`
+		}
 	}{
 		Version: conf.Version{
 			Build: build,
@@ -103,6 +116,7 @@ func run(log *zap.SugaredLogger) error {
 
 	// =========================================================================
 	// App Starting
+
 	log.Infow("starting service", "version", build)
 	defer log.Infow("shutdown complete")
 
@@ -154,7 +168,23 @@ func run(log *zap.SugaredLogger) error {
 	}()
 
 	// =========================================================================
+	// Start Tracing Support
+
+	log.Infow("startup", "status", "initializing OT/Zipkin tracing support")
+
+	traceProvider, err := startTracing(
+		cfg.Zipkin.ServiceName,
+		cfg.Zipkin.ReporterURI,
+		cfg.Zipkin.Probability,
+	)
+	if err != nil {
+		return fmt.Errorf("starting tracing: %w", err)
+	}
+	defer traceProvider.Shutdown(context.Background())
+
+	// =========================================================================
 	// Start Debug Service
+
 	log.Infow("startup", "status", "debug v1 router started", "host", cfg.Web.DebugHost)
 
 	// The Debug function returns a mux to listen and serve on for all the debug
@@ -233,4 +263,42 @@ func run(log *zap.SugaredLogger) error {
 	}
 
 	return nil
+}
+
+// =============================================================================
+
+// startTracing configure open telemetry to be used with zipkin.
+func startTracing(serviceName string, reporterURI string, probability float64) (*trace.TracerProvider, error) {
+
+	// WARNING: The current settings are using defaults which may not be
+	// compatible with your project. Please review the documentation for
+	// opentelemetry.
+
+	exporter, err := zipkin.New(
+		reporterURI,
+		// zipkin.WithLogger(zap.NewStdLog(log)),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("creating new exporter: %w", err)
+	}
+
+	traceProvider := trace.NewTracerProvider(
+		trace.WithSampler(trace.TraceIDRatioBased(probability)),
+		trace.WithBatcher(exporter,
+			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
+			trace.WithBatchTimeout(trace.DefaultScheduleDelay*time.Millisecond),
+			trace.WithMaxExportBatchSize(trace.DefaultMaxExportBatchSize),
+		),
+		trace.WithResource(
+			resource.NewWithAttributes(
+				semconv.SchemaURL,
+				semconv.ServiceNameKey.String(serviceName),
+				attribute.String("exporter", "zipkin"),
+			),
+		),
+	)
+
+	// I can only get this working properly using the singleton :(
+	otel.SetTracerProvider(traceProvider)
+	return traceProvider, nil
 }
