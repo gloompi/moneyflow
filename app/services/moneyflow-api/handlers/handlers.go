@@ -10,8 +10,8 @@ import (
 
 	"github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/debug/checkgrp"
 	v1 "github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/v1"
-	"github.com/gloompi/ultimate-service/business/sys/auth"
-	"github.com/gloompi/ultimate-service/business/web/mid"
+	"github.com/gloompi/ultimate-service/business/web/auth"
+	"github.com/gloompi/ultimate-service/business/web/v1/mid"
 	"github.com/gloompi/ultimate-service/foundation/web"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"

@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/gloompi/ultimate-service/business/core/user"
-	"github.com/gloompi/ultimate-service/business/sys/auth"
+	"github.com/gloompi/ultimate-service/business/web/auth"
 	v1Web "github.com/gloompi/ultimate-service/business/web/v1"
 	"github.com/gloompi/ultimate-service/foundation/web"
 )

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gloompi/ultimate-service/business/sys/metrics"
+	"github.com/gloompi/ultimate-service/business/web/metrics"
 	"github.com/gloompi/ultimate-service/foundation/web"
 )
 

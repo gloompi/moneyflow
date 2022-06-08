@@ -14,8 +14,8 @@ import (
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers"
-	"github.com/gloompi/ultimate-service/business/sys/auth"
 	"github.com/gloompi/ultimate-service/business/sys/database"
+	"github.com/gloompi/ultimate-service/business/web/auth"
 	"github.com/gloompi/ultimate-service/foundation/keystore"
 	"github.com/gloompi/ultimate-service/foundation/logger"
 	"go.uber.org/automaxprocs/maxprocs"

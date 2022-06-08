@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gloompi/ultimate-service/business/core/user"
-	"github.com/gloompi/ultimate-service/business/sys/auth"
 	"github.com/gloompi/ultimate-service/business/sys/database"
+	"github.com/gloompi/ultimate-service/business/web/auth"
 	"github.com/gloompi/ultimate-service/foundation/keystore"
 	"github.com/golang-jwt/jwt/v4"
 	"go.uber.org/zap"

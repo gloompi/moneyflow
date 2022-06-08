@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gloompi/ultimate-service/business/sys/auth"
+	"github.com/gloompi/ultimate-service/business/web/auth"
 	"github.com/golang-jwt/jwt/v4"
 )
 

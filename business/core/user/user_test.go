@@ -10,7 +10,7 @@ import (
 	"github.com/gloompi/ultimate-service/business/core/user"
 	"github.com/gloompi/ultimate-service/business/data/schema"
 	"github.com/gloompi/ultimate-service/business/data/tests"
-	"github.com/gloompi/ultimate-service/business/sys/auth"
+	"github.com/gloompi/ultimate-service/business/web/auth"
 	"github.com/gloompi/ultimate-service/foundation/docker"
 	"github.com/google/go-cmp/cmp"
 )

@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/gloompi/ultimate-service/business/core/user/db"
-	"github.com/gloompi/ultimate-service/business/sys/auth"
 	"github.com/gloompi/ultimate-service/business/sys/database"
 	"github.com/gloompi/ultimate-service/business/sys/validate"
+	"github.com/gloompi/ultimate-service/business/web/auth"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
