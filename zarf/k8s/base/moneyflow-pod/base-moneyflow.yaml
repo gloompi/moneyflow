@@ -20,6 +20,11 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       hostNetwork: true
       terminationGracePeriodSeconds: 60
+      initContainers:
+      # moneyflow-api init container configuration
+      - name: init-migrate
+        image: moneyflow-api-image
+        command: ['./admin']
       containers:
       - name: moneyflow-api
         image: moneyflow-api-image

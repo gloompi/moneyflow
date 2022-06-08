@@ -14,10 +14,8 @@ import (
 var (
 	//go:embed sql/schema.sql
 	schemaDoc string
-
 	//go:embed sql/seed.sql
 	seedDoc string
-
 	//go:embed sql/delete.sql
 	deleteDoc string
 )
