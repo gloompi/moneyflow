@@ -2,7 +2,6 @@ package mid
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/gloompi/ultimate-service/business/sys/validate"
@@ -15,13 +14,10 @@ import (
 // application errors which are used to respond to the client in a uniform way.
 // Unexpected errors (status >= 500) are logged.
 func Errors(log *zap.SugaredLogger) web.Middleware {
-
 	// This is the actual middleware function to be executed.
 	m := func(handler web.Handler) web.Handler {
-
 		// Create the handler that will be attached in the middleware chain.
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-
 			// If the context is missing this value, request the service
 			// to be shutdown gracefully.
 			v, err := web.GetValues(ctx)
@@ -46,21 +42,19 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 						Fields: fieldErrors.Fields(),
 					}
 					status = http.StatusBadRequest
-					fmt.Println("========= fieldErrors =========", err)
+
 				case v1Web.IsRequestError(err):
 					reqErr := v1Web.GetRequestError(err)
 					er = v1Web.ErrorResponse{
 						Error: reqErr.Error(),
 					}
 					status = reqErr.Status
-					fmt.Println("========= requestError =========", err)
 
 				default:
 					er = v1Web.ErrorResponse{
 						Error: http.StatusText(http.StatusInternalServerError),
 					}
 					status = http.StatusInternalServerError
-					fmt.Println("========= default =========", err)
 				}
 
 				// Respond with the error back to the client.

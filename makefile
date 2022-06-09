@@ -4,37 +4,64 @@ SHELL := /bin/bash
 # Testing running system
 
 # For testing a simple query on the system. Don't forget to `make seed` first.
-# curl -il http://localhost:3030/v1/testauth
 # curl --user "admin@example.com:gophers" http://localhost:3030/v1/users/token
 # export TOKEN="COPY TOKEN STRING FROM LAST CALL"
-# curl -ilH "Authorization: Bearer ${TOKEN}" http://localhost:3030/v1/testauth
 # curl -H "Authorization: Bearer ${TOKEN}" http://localhost:3030/v1/users/1/2
 #
 # For testing load on the service.
-# hey -m GET -c 100 -n 10000 http://localhost:3030/v1/test
+# go install github.com/rakyll/hey@latest
+# hey -m GET -c 100 -n 10000 -H "Authorization: Bearer ${TOKEN}" http://localhost:3030/v1/users/1/2
 #
 # Access metrics directly (4040) or through the sidecar (3031)
+# go install github.com/divan/expvarmon@latest
 # expvarmon -ports=":4040" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
 # expvarmon -ports=":3031" -endpoint="/metrics" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
-#
-# Used to install expvarmon program for metrics dashboard.
-# go install github.com/divan/expvarmon@latest
 #
 # To generate a private/public key PEM file.
 # openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
 # openssl rsa -pubout -in private.pem -out public.pem
 # ./admin genkey
 #
+# Testing coverage.
+# go test -coverprofile p.out
+# go tool cover -html p.out
+#
+# Test debug endpoints.
+# curl http://localhost:4040/debug/liveness
+# curl http://localhost:4040/debug/readiness
+#
+# Running pgcli client for database.
+# brew install pgcli
+# pgcli postgresql://postgres:postgres@localhost
+#
+# Launch zipkin.
+# http://localhost:9411/zipkin/
+#
 # Database access
 # dblab --host 0.0.0.0 --user postgres --db postgres --pass postgres --ssl disable --port 5432 --driver postgres
-#
+
 # ==============================================================================
+# Local commands
 
 build:
 	go build -o bin/moneyflow-api ./app/services/moneyflow-api
 
 run:
 	go run app/services/moneyflow-api/main.go | go run app/tooling/logfmt/main.go
+
+# ==============================================================================
+# Modules support
+
+tidy:
+	go mod tidy
+	go mod vendor
+
+# ==============================================================================
+# Running tests within the local computer
+
+test:
+	go test ./... -count=1
+	staticcheck -checks=all ./...
 
 # ==============================================================================
 # Install dependencies
@@ -50,6 +77,7 @@ dev.setup.mac:
 
 # $(shell git rev-parse --short HEAD)
 APP_NAME := moneyflow-api-amd64
+METRICS_NAME := metrics-amd64
 VERSION := 1.0
 
 all: moneyflow metrics
@@ -65,7 +93,7 @@ moneyflow:
 metrics:
 	docker build \
 		-f zarf/docker/dockerfile.metrics \
-		-t metrics-amd64:$(VERSION) \
+		-t $(METRICS_NAME):$(VERSION) \
 		--build-arg BUILD_REF=$(VERSION) \
 		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
 		.
@@ -87,9 +115,9 @@ kind-down:
 
 kind-load:
 	cd zarf/k8s/kind/moneyflow-pod; kustomize edit set image moneyflow-api-image=$(APP_NAME):$(VERSION)
-	cd zarf/k8s/kind/moneyflow-pod; kustomize edit set image metrics-image=metrics-amd64:$(VERSION)
+	cd zarf/k8s/kind/moneyflow-pod; kustomize edit set image metrics-image=$(METRICS_NAME):$(VERSION)
 	kind load docker-image $(APP_NAME):$(VERSION) --name $(KIND_CLUSTER)
-	kind load docker-image metrics-amd64:$(VERSION) --name $(KIND_CLUSTER)
+	kind load docker-image $(METRICS_NAME):$(VERSION) --name $(KIND_CLUSTER)
 
 kind-apply:
 	kustomize build zarf/k8s/kind/database-pod | kubectl apply -f -
@@ -164,17 +192,3 @@ kind-shell:
 kind-database:
 	# ./admin --db-disable-tls=1 migrate
 	# ./admin --db-disable-tls=1 seed
-
-# ==============================================================================
-# Modules support
-
-tidy:
-	go mod tidy
-	go mod vendor
-
-# ==============================================================================
-# Running tests within the local computer
-
-test:
-	go test ./... -count=1
-	staticcheck -checks=all ./...

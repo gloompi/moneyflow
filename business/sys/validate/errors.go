@@ -5,35 +5,6 @@ import (
 	"errors"
 )
 
-// ErrInvaludID occurs when an ID is not in valid form.
-var ErrInvaludID = errors.New("ID is not in its proper form")
-
-// ErrorResponse is the form used for API responses from failures in the API.
-type ErrorResponse struct {
-	Error  string `json:"error"`
-	Fields string `json:"fields,omitempty"`
-}
-
-// RequestError is used to pass an error during the request through the
-// application with web specific context.
-type RequestError struct {
-	Err    error
-	Status int
-	Fields error
-}
-
-// NewRequestError wraps a provided error with an HTTP status code. The
-// function should be used when handlers encounter expected errors.
-func NewRequestError(err error, status int) error {
-	return &RequestError{err, status, nil}
-}
-
-// Error implements the error interface. It uses the default message of the
-// wrapped error. This is what will be shown in services' logs.
-func (err *RequestError) Error() string {
-	return err.Err.Error()
-}
-
 // FieldError is used to indicate an error with a specific request field.
 type FieldError struct {
 	Field string `json:"field"`
@@ -74,16 +45,4 @@ func GetFieldErrors(err error) FieldErrors {
 		return nil
 	}
 	return fe
-}
-
-// Cause iterates through all the wrapped errors until the root
-// error value is reached.
-func Cause(err error) error {
-	root := err
-	for {
-		if err = errors.Unwrap(root); err == nil {
-			return root
-		}
-		root = err
-	}
 }

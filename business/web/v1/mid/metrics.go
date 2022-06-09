@@ -12,13 +12,10 @@ import (
 
 // Metrics updates program counters.
 func Metrics() web.Middleware {
-
 	// This is the actual middleware function to be executed.
 	m := func(handler web.Handler) web.Handler {
-
 		// Create the handler that will be attached in the middleware chain.
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-
 			// Add the metrics value for metric gathering.
 			ctx = metrics.Set(ctx)
 

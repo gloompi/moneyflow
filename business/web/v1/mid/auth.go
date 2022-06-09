@@ -14,13 +14,10 @@ import (
 
 // Authenticate validates a JWT from the `Authorization` header.
 func Authenticate(a *auth.Auth) web.Middleware {
-
 	// This is the actual middleware function to be executed.
 	m := func(handler web.Handler) web.Handler {
-
 		// Create the handler that will be attached in the middleware chain.
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-
 			// Expecting: bearer <token>
 			authStr := r.Header.Get("authorization")
 
@@ -53,13 +50,10 @@ func Authenticate(a *auth.Auth) web.Middleware {
 // Authorize validates that an authenticated user has at least one role from a
 // specified list. This method constructs the actual function that is used.
 func Authorize(roles ...string) web.Middleware {
-
 	// This is the actual middleware function to be executed.
 	m := func(handler web.Handler) web.Handler {
-
 		// Create the handler that will be attached in the middleware chain.
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-
 			// If the context is missing this value return failure.
 			claims, err := auth.GetClaims(ctx)
 			if err != nil {

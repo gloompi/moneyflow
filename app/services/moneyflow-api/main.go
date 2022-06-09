@@ -269,7 +269,6 @@ func run(log *zap.SugaredLogger) error {
 
 // startTracing configure open telemetry to be used with zipkin.
 func startTracing(serviceName string, reporterURI string, probability float64) (*trace.TracerProvider, error) {
-
 	// WARNING: The current settings are using defaults which may not be
 	// compatible with your project. Please review the documentation for
 	// opentelemetry.

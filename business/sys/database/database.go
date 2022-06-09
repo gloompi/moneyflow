@@ -12,6 +12,8 @@ import (
 	"github.com/gloompi/ultimate-service/foundation/web"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq" // Calls init function.
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.uber.org/zap"
 )
 
@@ -147,11 +149,15 @@ func WithinTran(ctx context.Context, log *zap.SugaredLogger, db Transactor, fn f
 	return nil
 }
 
-// NamedExecContext is a helper function to execute a CUD operation with
+// NamedExecContext is a helper function to execute a CRUD operation with
 // logging and tracing.
-func NamedExecContext(ctx context.Context, log *zap.SugaredLogger, db sqlx.ExtContext, query string, data interface{}) error {
+func NamedExecContext(ctx context.Context, log *zap.SugaredLogger, db sqlx.ExtContext, query string, data any) error {
 	q := queryString(query, data)
 	log.Infow("database.NamedExecContext", "traceid", web.GetTraceID(ctx), "query", q)
+
+	ctx, span := otel.GetTracerProvider().Tracer("").Start(ctx, "business.sys.database")
+	span.SetAttributes(attribute.String("query", q))
+	defer span.End()
 
 	if _, err := sqlx.NamedExecContext(ctx, db, query, data); err != nil {
 		// Checks if the error is of code 23505 (unique_violation).
@@ -191,9 +197,9 @@ func NamedQuerySlice[T any](ctx context.Context, log *zap.SugaredLogger, db sqlx
 
 // NamedQueryStruct is a helper function for executing queries that return a
 // single value to be unmarshalled into a struct type.
-func NamedQueryStruct(ctx context.Context, log *zap.SugaredLogger, db sqlx.ExtContext, query string, data interface{}, dest interface{}) error {
+func NamedQueryStruct(ctx context.Context, log *zap.SugaredLogger, db sqlx.ExtContext, query string, data any, dest any) error {
 	q := queryString(query, data)
-	log.Infow("database.NamedQuerySlice", "traceid", web.GetTraceID(ctx), "query", q)
+	log.Infow("database.NamedQueryStruct", "traceid", web.GetTraceID(ctx), "query", q)
 
 	rows, err := sqlx.NamedQueryContext(ctx, db, query, data)
 	if err != nil {
@@ -213,7 +219,7 @@ func NamedQueryStruct(ctx context.Context, log *zap.SugaredLogger, db sqlx.ExtCo
 }
 
 // queryString provides a pretty print version of the query and parameters.
-func queryString(query string, args ...interface{}) string {
+func queryString(query string, args ...any) string {
 	query, params, err := sqlx.Named(query, args)
 	if err != nil {
 		return err.Error()
@@ -232,8 +238,8 @@ func queryString(query string, args ...interface{}) string {
 		query = strings.Replace(query, "?", value, 1)
 	}
 
-	query = strings.Replace(query, "\t", "", -1)
-	query = strings.Replace(query, "\n", " ", -1)
+	query = strings.ReplaceAll(query, "\t", "")
+	query = strings.ReplaceAll(query, "\n", " ")
 
 	return strings.Trim(query, " ")
 }

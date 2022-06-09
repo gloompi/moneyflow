@@ -25,7 +25,6 @@ var translator ut.Translator
 var emailRegex *regexp.Regexp
 
 func init() {
-
 	// Instantiate a validator.
 	validate = validator.New()
 
