@@ -20,12 +20,12 @@ var (
 	ErrInvalidID = errors.New("ID is not in its proper form")
 )
 
-// Core manages the set of APIs for product access.
+// Core manages the set of APIs for income access.
 type Core struct {
 	store db.Store
 }
 
-// NewCore constructs a core for product api access.
+// NewCore constructs a core for income api access.
 func NewCore(log *zap.SugaredLogger, sqlxDB *sqlx.DB) Core {
 	return Core{
 		store: db.NewStore(log, sqlxDB),
@@ -136,7 +136,7 @@ func (c Core) Query(ctx context.Context, pageNumber int, rowsPerPage int) ([]Inc
 	return toIncomeSlice(dbIncs), nil
 }
 
-// // QueryByID finds the income identified by a given ID.
+// QueryByID finds the income identified by a given ID.
 func (c Core) QueryByID(ctx context.Context, incomeID string) (Income, error) {
 	if err := validate.CheckID(incomeID); err != nil {
 		return Income{}, ErrInvalidID
@@ -153,7 +153,7 @@ func (c Core) QueryByID(ctx context.Context, incomeID string) (Income, error) {
 	return toIncome(dbInc), nil
 }
 
-// QueryByUserID finds the products identified by a given User ID.
+// QueryByUserID finds the incomes identified by a given User ID.
 func (c Core) QueryByUserID(ctx context.Context, userID string) ([]Income, error) {
 	if err := validate.CheckID(userID); err != nil {
 		return nil, ErrInvalidID

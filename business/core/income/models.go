@@ -36,8 +36,8 @@ type NewIncome struct {
 	UserID           string `json:"user_id" validate:"required"`
 }
 
-// UpdateProduct defines what information may be provided to modify an
-// existing Product. All fields are optional so clients can send just the
+// UpdateIncome defines what information may be provided to modify an
+// existing Income. All fields are optional so clients can send just the
 // fields they want changed. It uses pointer fields so we can differentiate
 // between a field that was not provided and a field that was provided as
 // explicitly blank. Normally we do not want to use pointers to basic types but

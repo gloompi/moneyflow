@@ -30,6 +30,7 @@ import (
 
 /**
 * Need to figure out timeouts
+* Update handling queries data two times
  */
 
 var build = "develop"
