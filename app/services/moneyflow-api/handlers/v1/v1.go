@@ -5,7 +5,9 @@ package v1
 import (
 	"net/http"
 
+	"github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/v1/incomegrp"
 	"github.com/gloompi/ultimate-service/app/services/moneyflow-api/handlers/v1/usergrp"
+	"github.com/gloompi/ultimate-service/business/core/income"
 	"github.com/gloompi/ultimate-service/business/core/user"
 	"github.com/gloompi/ultimate-service/business/web/auth"
 	"github.com/gloompi/ultimate-service/business/web/v1/mid"
@@ -39,4 +41,14 @@ func Routes(app *web.App, cfg Config) {
 	app.Handle(http.MethodPost, version, "/users", ugh.Create, authen, admin)
 	app.Handle(http.MethodPut, version, "/users/:id", ugh.Update, authen)
 	app.Handle(http.MethodDelete, version, "/users/:id", ugh.Delete, authen)
+
+	// Register product and sale endpoints.
+	igh := incomegrp.Handlers{
+		Income: income.NewCore(cfg.Log, cfg.DB),
+	}
+	app.Handle(http.MethodGet, version, "/incomes/:page/:rows", igh.Query, authen)
+	app.Handle(http.MethodGet, version, "/incomes/:id", igh.QueryByID, authen)
+	app.Handle(http.MethodPost, version, "/incomes", igh.Create, authen)
+	app.Handle(http.MethodPut, version, "/incomes/:id", igh.Update, authen)
+	app.Handle(http.MethodDelete, version, "/incomes/:id", igh.Delete, authen)
 }
