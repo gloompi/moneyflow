@@ -12,9 +12,9 @@ SHELL := /bin/bash
 # go install github.com/rakyll/hey@latest
 # hey -m GET -c 100 -n 10000 -H "Authorization: Bearer ${TOKEN}" http://localhost:3030/v1/users/1/2
 #
-# Access metrics directly (4040) or through the sidecar (3031)
+# Access metrics directly (5050) or through the sidecar (3031)
 # go install github.com/divan/expvarmon@latest
-# expvarmon -ports=":4040" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+# expvarmon -ports=":5050" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
 # expvarmon -ports=":3031" -endpoint="/metrics" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
 #
 # To generate a private/public key PEM file.
@@ -27,8 +27,8 @@ SHELL := /bin/bash
 # go tool cover -html p.out
 #
 # Test debug endpoints.
-# curl http://localhost:4040/debug/liveness
-# curl http://localhost:4040/debug/readiness
+# curl http://localhost:5050/debug/liveness
+# curl http://localhost:5050/debug/readiness
 #
 # Running pgcli client for database.
 # brew install pgcli

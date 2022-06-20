@@ -35,11 +35,11 @@ spec:
         - name: moneyflow-api
           containerPort: 3030
         - name: moneyflow-debug
-          containerPort: 4040
+          containerPort: 5050
         readinessProbe: # readiness probes mark the service available to accept traffic.
           httpGet:
             path: /debug/readiness
-            port: 4040
+            port: 5050
           initialDelaySeconds: 15
           periodSeconds: 15
           timeoutSeconds: 5
@@ -48,7 +48,7 @@ spec:
         livenessProbe: # liveness probes mark the service alive or dead (to be restarted).
           httpGet:
             path: /debug/liveness
-            port: 4040
+            port: 5050
           initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 5
@@ -77,7 +77,7 @@ spec:
         - name: metrics
           containerPort: 3031
         - name: metrics-debug
-          containerPort: 4041
+          containerPort: 5051
 ---
 apiVersion: v1
 kind: Service
@@ -93,11 +93,11 @@ spec:
     port: 3030
     targetPort: moneyflow-api
   - name: moneyflow-debug
-    port: 4040
+    port: 5050
     targetPort: moneyflow-debug
   - name: metrics
     port: 3031
     targetPort: metrics
   - name: metrics-debug
-    port: 4041
+    port: 5051
     targetPort: metrics-debug

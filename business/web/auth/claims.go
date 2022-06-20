@@ -20,7 +20,7 @@ type Claims struct {
 }
 
 // Authorized returns true if the claims has at least one of the provided roles.
-func (c Claims) Authorized(roles ...string) bool {
+func (c Claims) AuthorizedByRole(roles ...string) bool {
 	for _, has := range c.Roles {
 		for _, want := range roles {
 			if has == want {
@@ -29,6 +29,10 @@ func (c Claims) Authorized(roles ...string) bool {
 		}
 	}
 	return false
+}
+
+func (c Claims) AuthorizedByUserId(userID string) bool {
+	return c.Subject == userID
 }
 
 // ctxKey represents the type of value for the context key.

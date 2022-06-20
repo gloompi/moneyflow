@@ -160,7 +160,7 @@ func (s Store) QueryByID(ctx context.Context, incomeID string) (Income, error) {
 }
 
 // QueryByUserID finds the income identified by a given User ID.
-func (s Store) QueryByUserID(ctx context.Context, userID string) ([]Income, error) {
+func (s Store) QueryByUserID(ctx context.Context, userID string) ([]IncomeByUser, error) {
 	data := struct {
 		UserID string `db:"user_id"`
 	}{
@@ -169,13 +169,18 @@ func (s Store) QueryByUserID(ctx context.Context, userID string) ([]Income, erro
 
 	const q = `
 	SELECT
-		*
+		COALESCE(SUM(i2.amount), 0) as total,
+		i1.*
 	FROM
-		incomes
+		incomes as i1
+	LEFT JOIN
+		incomes AS i2 ON i1.user_id = i2.user_id 
 	WHERE
-		user_id = :user_id`
+		i1.user_id = :user_id
+	group by
+		i1.income_id`
 
-	var incs []Income
+	var incs []IncomeByUser
 	if err := database.NamedQuerySlice(ctx, s.log, s.db, q, data, &incs); err != nil {
 		return nil, fmt.Errorf("selecting incomes userID[%s]: %w", userID, err)
 	}

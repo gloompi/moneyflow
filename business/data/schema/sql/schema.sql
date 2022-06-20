@@ -15,7 +15,7 @@ CREATE TABLE users (
 -- Version: 1.2
 -- Description: Create type reoccurrence enum and duration enum
 CREATE TYPE reoccurrence_type AS ENUM ('Monthly', 'Daily', 'Once');
-CREATE TYPE duration_type AS ENUM ('Months', 'Days');
+CREATE TYPE duration_type AS ENUM ('Months', 'Days', 'None');
 
 -- Version: 1.3
 -- Description: Create table incomes
@@ -29,7 +29,7 @@ CREATE TABLE incomes (
 	reoccurrence        INT,
   duration            INT,
   "reoccurrence_type" reoccurrence_type DEFAULT 'Monthly',
-  "duration_type"     duration_type,
+  "duration_type"     duration_type DEFAULT 'None',
 	date_created        TIMESTAMP,
 	date_updated        TIMESTAMP,
 

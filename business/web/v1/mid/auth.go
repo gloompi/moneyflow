@@ -63,7 +63,7 @@ func Authorize(roles ...string) web.Middleware {
 				)
 			}
 
-			if !claims.Authorized(roles...) {
+			if !claims.AuthorizedByRole(roles...) {
 				return v1Web.NewRequestError(
 					fmt.Errorf("you are not authorized for that action, claims[%v] roles[%v]", claims.Roles, roles),
 					http.StatusForbidden,

@@ -154,15 +154,15 @@ func (c Core) QueryByID(ctx context.Context, incomeID string) (Income, error) {
 }
 
 // QueryByUserID finds the incomes identified by a given User ID.
-func (c Core) QueryByUserID(ctx context.Context, userID string) ([]Income, error) {
+func (c Core) QueryByUserID(ctx context.Context, userID string) (IncomesByUser, error) {
 	if err := validate.CheckID(userID); err != nil {
-		return nil, ErrInvalidID
+		return IncomesByUser{}, ErrInvalidID
 	}
 
 	dbInc, err := c.store.QueryByUserID(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("query: %w", err)
+		return IncomesByUser{}, fmt.Errorf("query: %w", err)
 	}
 
-	return toIncomeSlice(dbInc), nil
+	return toIncomesByUser(dbInc), nil
 }

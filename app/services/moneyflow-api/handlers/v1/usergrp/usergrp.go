@@ -63,7 +63,7 @@ func (h Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Req
 	userID := web.Param(r, "id")
 
 	// If you are not an admin and looking to retrieve someone other than yourself.
-	if !claims.Authorized(auth.RoleAdmin) && claims.Subject != userID {
+	if !claims.AuthorizedByRole(auth.RoleAdmin) && claims.Subject != userID {
 		return v1Web.NewRequestError(auth.ErrForbidden, http.StatusForbidden)
 	}
 
@@ -91,7 +91,7 @@ func (h Handlers) Delete(ctx context.Context, w http.ResponseWriter, r *http.Req
 	userID := web.Param(r, "id")
 
 	// If you are not an admin and looking to delete someone other than yourself.
-	if !claims.Authorized(auth.RoleAdmin) && claims.Subject != userID {
+	if !claims.AuthorizedByRole(auth.RoleAdmin) && claims.Subject != userID {
 		return v1Web.NewRequestError(auth.ErrForbidden, http.StatusForbidden)
 	}
 
@@ -138,7 +138,7 @@ func (h Handlers) QueryByID(ctx context.Context, w http.ResponseWriter, r *http.
 	userID := web.Param(r, "id")
 
 	// If you are not an admin and looking to retrieve someone other than yourself.
-	if !claims.Authorized(auth.RoleAdmin) && claims.Subject != userID {
+	if !claims.AuthorizedByRole(auth.RoleAdmin) && claims.Subject != userID {
 		return v1Web.NewRequestError(auth.ErrForbidden, http.StatusForbidden)
 	}
 
@@ -165,6 +165,7 @@ func (h Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	email, pass, ok := r.BasicAuth()
+
 	if !ok {
 		err := errors.New("must provide email and password in Basic auth")
 		return v1Web.NewRequestError(err, http.StatusUnauthorized)
@@ -183,8 +184,11 @@ func (h Handlers) Token(ctx context.Context, w http.ResponseWriter, r *http.Requ
 	}
 
 	var tkn struct {
-		Token string `json:"token"`
+		Token  string `json:"token"`
+		UserId string `json:"user_id"`
 	}
+
+	tkn.UserId = claims.Subject
 	tkn.Token, err = h.Auth.GenerateToken(claims)
 	if err != nil {
 		return fmt.Errorf("generating token: %w", err)

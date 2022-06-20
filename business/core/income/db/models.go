@@ -17,3 +17,9 @@ type Income struct {
 	DateCreated      time.Time `db:"date_created"`      // When the income was added.
 	DateUpdated      time.Time `db:"date_updated"`      // When the income record was last modified.
 }
+
+// Income represents an income structure by user.
+type IncomeByUser struct {
+	Income
+	Total int `db:"total"` // Total income.
+}

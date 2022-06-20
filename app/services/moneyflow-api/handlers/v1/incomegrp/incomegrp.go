@@ -72,7 +72,7 @@ func (h Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Req
 	}
 
 	// If you are not an admin and looking to update a income you don't own.
-	if !claims.Authorized(auth.RoleAdmin) && inc.UserID != claims.Subject {
+	if !claims.AuthorizedByRole(auth.RoleAdmin) && claims.AuthorizedByUserId(inc.UserID) {
 		return v1Web.NewRequestError(auth.ErrForbidden, http.StatusForbidden)
 	}
 
@@ -115,7 +115,7 @@ func (h Handlers) Delete(ctx context.Context, w http.ResponseWriter, r *http.Req
 	}
 
 	// If you are not an admin and looking to delete an income you don't own.
-	if !claims.Authorized(auth.RoleAdmin) && inc.UserID != claims.Subject {
+	if !claims.AuthorizedByRole(auth.RoleAdmin) && !claims.AuthorizedByUserId(inc.UserID) {
 		return v1Web.NewRequestError(auth.ErrForbidden, http.StatusForbidden)
 	}
 
@@ -168,4 +168,33 @@ func (h Handlers) QueryByID(ctx context.Context, w http.ResponseWriter, r *http.
 	}
 
 	return web.Respond(ctx, w, inc, http.StatusOK)
+}
+
+// QueryByUserID returns a list of incomes for a user.
+func (h Handlers) QueryByUserID(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	claims, err := auth.GetClaims(ctx)
+	if err != nil {
+		return v1Web.NewRequestError(auth.ErrForbidden, http.StatusForbidden)
+	}
+
+	userID := web.Param(r, "user_id")
+
+	// If you are not an admin and looking to delete an income you don't own.
+	if !claims.AuthorizedByRole(auth.RoleAdmin) && !claims.AuthorizedByUserId(userID) {
+		return v1Web.NewRequestError(auth.ErrForbidden, http.StatusForbidden)
+	}
+
+	incomes, err := h.Income.QueryByUserID(ctx, userID)
+	if err != nil {
+		switch {
+		case errors.Is(err, income.ErrInvalidID):
+			return v1Web.NewRequestError(err, http.StatusBadRequest)
+		case errors.Is(err, income.ErrNotFound):
+			return v1Web.NewRequestError(err, http.StatusNotFound)
+		default:
+			return fmt.Errorf("userID[%s]: %w", userID, err)
+		}
+	}
+
+	return web.Respond(ctx, w, incomes, http.StatusOK)
 }

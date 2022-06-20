@@ -7,10 +7,10 @@ nodes:
     hostPort: 3030
   - containerPort: 3031
     hostPort: 3031
-  - containerPort: 4040
-    hostPort: 4040
-  - containerPort: 4041
-    hostPort: 4041
+  - containerPort: 5050
+    hostPort: 5050
+  - containerPort: 5051
+    hostPort: 5051
   - containerPort: 9411
     hostPort: 9411
   - containerPort: 5432

@@ -40,7 +40,7 @@ func Routes(app *web.App, cfg Config) {
 	app.Handle(http.MethodGet, version, "/users/token", ugh.Token)
 	app.Handle(http.MethodGet, version, "/users/:page/:rows", ugh.Query, authen, admin)
 	app.Handle(http.MethodGet, version, "/users/:id", ugh.QueryByID, authen)
-	app.Handle(http.MethodPost, version, "/users", ugh.Create, authen, admin)
+	app.Handle(http.MethodPost, version, "/users", ugh.Create)
 	app.Handle(http.MethodPut, version, "/users/:id", ugh.Update, authen)
 	app.Handle(http.MethodDelete, version, "/users/:id", ugh.Delete, authen)
 
@@ -48,18 +48,19 @@ func Routes(app *web.App, cfg Config) {
 	igh := incomegrp.Handlers{
 		Income: income.NewCore(cfg.Log, cfg.DB),
 	}
-	app.Handle(http.MethodGet, version, "/incomes/:page/:rows", igh.Query, authen)
-	app.Handle(http.MethodGet, version, "/incomes/:id", igh.QueryByID, authen)
+	app.Handle(http.MethodGet, version, "/incomes/:page/:rows", igh.Query, authen, admin)
+	app.Handle(http.MethodGet, version, "/incomes/:id", igh.QueryByID, authen, admin)
+	app.Handle(http.MethodGet, version, "/incomes/user/:user_id", igh.QueryByUserID, authen)
 	app.Handle(http.MethodPost, version, "/incomes", igh.Create, authen)
 	app.Handle(http.MethodPut, version, "/incomes/:id", igh.Update, authen)
 	app.Handle(http.MethodDelete, version, "/incomes/:id", igh.Delete, authen)
 
-	// Register expense management endpoints
+	// Register expense management endpoints.
 	egh := expensegrp.Handlers{
 		Expense: expense.NewCore(cfg.Log, cfg.DB),
 	}
-	app.Handle(http.MethodGet, version, "/expenses/:page/:rows", egh.Query, authen)
-	app.Handle(http.MethodGet, version, "/expenses/:id", egh.QueryByID, authen)
+	app.Handle(http.MethodGet, version, "/expenses/:page/:rows", egh.Query, authen, admin)
+	app.Handle(http.MethodGet, version, "/expenses/:id", egh.QueryByID, authen, admin)
 	app.Handle(http.MethodPost, version, "/expenses", egh.Create, authen)
 	app.Handle(http.MethodPut, version, "/expenses/:id", egh.Update, authen)
 	app.Handle(http.MethodDelete, version, "/expenses/:id", egh.Delete, authen)

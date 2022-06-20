@@ -61,7 +61,7 @@ func run(log *zap.SugaredLogger) error {
 	cfg := struct {
 		conf.Version
 		Web struct {
-			DebugHost string `conf:"default:0.0.0.0:4041"`
+			DebugHost string `conf:"default:0.0.0.0:5051"`
 		}
 		Expvar struct {
 			Host            string        `conf:"default:0.0.0.0:3031"`
@@ -72,7 +72,7 @@ func run(log *zap.SugaredLogger) error {
 			ShutdownTimeout time.Duration `conf:"default:5s"`
 		}
 		Collect struct {
-			From string `conf:"default:http://localhost:4040/debug/vars"`
+			From string `conf:"default:http://localhost:5050/debug/vars"`
 		}
 		Publish struct {
 			To       string        `conf:"default:console"`

@@ -71,7 +71,7 @@ func (h Handlers) Update(ctx context.Context, w http.ResponseWriter, r *http.Req
 		}
 	}
 
-	if !claims.Authorized(auth.RoleAdmin) && exp.UserID != claims.Subject {
+	if !claims.AuthorizedByRole(auth.RoleAdmin) && exp.UserID != claims.Subject {
 		return v1Web.NewRequestError(auth.ErrForbidden, http.StatusForbidden)
 	}
 
@@ -114,7 +114,7 @@ func (h Handlers) Delete(ctx context.Context, w http.ResponseWriter, r *http.Req
 	}
 
 	// If you are not an admin and looking to delete an expense you don't own.
-	if !claims.Authorized(auth.RoleAdmin) && exp.UserID != claims.Subject {
+	if !claims.AuthorizedByRole(auth.RoleAdmin) && exp.UserID != claims.Subject {
 		return v1Web.NewRequestError(auth.ErrForbidden, http.StatusForbidden)
 	}
 

@@ -53,9 +53,19 @@ type UpdateIncome struct {
 	DurationType     *string `json:"duration_type"`
 }
 
+type IncomesByUser struct {
+	Incomes []Income `json:"incomes"` // List of incomes.
+	Total   int      `json:"total"`   // Total income.
+}
+
 // =============================================================================
 
 func toIncome(dbInc db.Income) Income {
+	iu := (*Income)(unsafe.Pointer(&dbInc))
+	return *iu
+}
+
+func toIncomeByUser(dbInc db.IncomeByUser) Income {
 	iu := (*Income)(unsafe.Pointer(&dbInc))
 	return *iu
 }
@@ -66,4 +76,12 @@ func toIncomeSlice(dbIncs []db.Income) []Income {
 		incs[i] = toIncome(dbInc)
 	}
 	return incs
+}
+
+func toIncomesByUser(dbIncs []db.IncomeByUser) IncomesByUser {
+	income := IncomesByUser{make([]Income, len(dbIncs)), dbIncs[0].Total}
+	for i, dbInc := range dbIncs {
+		income.Incomes[i] = toIncomeByUser(dbInc)
+	}
+	return income
 }
